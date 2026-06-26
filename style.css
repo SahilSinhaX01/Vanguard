@@ -50,7 +50,6 @@ button {
   font-family: inherit;
 }
 
-/* Fixed Background Canvas */
 #battle-canvas {
   position: fixed;
   top: 0;
@@ -59,7 +58,7 @@ button {
   height: 100vh;
   z-index: -1;
   pointer-events: none;
-  background-color: var(--bg-page);
+  background-color: #040406;
 }
 
 /* Navigation Bar */

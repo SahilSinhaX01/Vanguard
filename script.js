@@ -1,513 +1,831 @@
-// ----------------------------------------------------
-// BACKGROUND CANVAS ENGINE (Deep Space Battle)
-// ----------------------------------------------------
+// ==========================================================================
+// VANGUARD // 3D CINEMATIC MONOCHROME STARSHIP BACKDROP ENGINE (Three.js & GSAP)
+// ==========================================================================
+
 const canvas = document.getElementById('battle-canvas');
-const ctx = canvas.getContext('2d');
+let renderer, scene, camera, clock;
+let composer; // post-processing EffectComposer
+let vanguardGroup, vanguardModel;
+let starfield;
+let planetMesh, planetAtmosphere;
+let innerPlumeMat, outerPlumeMat;
+let lastFlickerTime = 0;
+let currentFlicker = 1.0;
+let bobAngle = 0;
+let driftX = -0.3;
+let proceduralTex;
+let lastGrainTime = 0;
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-// Stars array
-const starsCount = 500;
-const stars = [];
-const twinkleCount = 80;
-const pulseCount = 20;
-
-for (let i = 0; i < starsCount; i++) {
-  let type = 'static';
-  if (i < twinkleCount) type = 'twinkle';
-  else if (i < twinkleCount + pulseCount) type = 'pulse';
-
-  stars.push({
-    x: Math.random() * 2000,
-    y: Math.random() * 2000,
-    radius: type === 'pulse' ? (1.5 + Math.random() * 0.5) : (0.2 + Math.random() * 1.0),
-    opacity: 0.1 + Math.random() * 0.5,
-    type: type,
-    offset: Math.random() * Math.PI * 2,
-    speed: 0.02 + Math.random() * 0.04
-  });
-}
-
-// Debris Field
-const debrisCount = 30;
-const debrisField = [];
-
-function generateDebrisPolygon(size) {
-  const points = [];
-  const numPoints = 5 + Math.floor(Math.random() * 4);
-  for (let i = 0; i < numPoints; i++) {
-    const angle = (i / numPoints) * Math.PI * 2;
-    const radius = (size / 2) + (Math.random() * size / 2);
-    points.push({
-      x: Math.sin(angle) * radius,
-      y: Math.cos(angle) * radius
-    });
-  }
-  return points;
-}
-
-for (let i = 0; i < debrisCount; i++) {
-  const size = 2 + Math.random() * 6;
-  const angle = Math.random() * Math.PI * 2;
-  const speed = 0.05 + Math.random() * 0.15;
-
-  debrisField.push({
-    x: Math.random() * window.innerWidth,
-    y: Math.random() * window.innerHeight,
-    dx: Math.sin(angle) * speed,
-    dy: Math.cos(angle) * speed,
-    points: generateDebrisPolygon(size),
-    opacity: 0.05 + Math.random() * 0.1,
-    rotation: Math.random() * Math.PI * 2,
-    rotSpeed: (Math.random() - 0.5) * 0.01
-  });
-}
-
-// Enemies
-const enemies = [
-  { id: 1, cx: 0.25, cy: 0.25, rx: 70, ry: 35, speed: 0.0006, size: 50, phase: 0, currentX: 0, currentY: 0, lastX: 0, lastY: 0 },
-  { id: 2, cx: 0.52, cy: 0.18, rx: 110, ry: 50, speed: 0.0004, size: 68, phase: Math.PI / 3, currentX: 0, currentY: 0, lastX: 0, lastY: 0 },
-  { id: 3, cx: 0.78, cy: 0.24, rx: 90, ry: 40, speed: 0.0007, size: 45, phase: Math.PI * 1.1, currentX: 0, currentY: 0, lastX: 0, lastY: 0 },
-  { id: 4, cx: 0.40, cy: 0.32, rx: 80, ry: 30, speed: 0.0005, size: 55, phase: Math.PI * 1.6, currentX: 0, currentY: 0, lastX: 0, lastY: 0 }
-];
-
-// Lasers & Explosions
-const lasers = [];
-const explosions = [];
-
-function drawDebris(ctx, debris) {
-  ctx.save();
-  ctx.translate(debris.x, debris.y);
-  ctx.rotate(debris.rotation);
-  ctx.beginPath();
-  ctx.moveTo(debris.points[0].x, debris.points[0].y);
-  for (let i = 1; i < debris.points.length; i++) {
-    ctx.lineTo(debris.points[i].x, debris.points[i].y);
-  }
-  ctx.closePath();
-  ctx.fillStyle = `rgba(255, 255, 255, ${debris.opacity})`;
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawHeroShip(ctx, x, y, time) {
-  const w = 150;
-  const h = 155;
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.lineWidth = 0.6;
+// Programmatically generates a worn metal panel texture for micro-roughness details
+function createProceduralNoiseTexture() {
+  const size = 1024;
+  const canvasTex = document.createElement('canvas');
+  canvasTex.width = size;
+  canvasTex.height = size;
+  const ctx = canvasTex.getContext('2d');
   
-  // Wings
-  ctx.beginPath();
-  ctx.moveTo(-w * 0.08, -h * 0.1);
-  ctx.lineTo(-w * 0.5, h * 0.15);
-  ctx.lineTo(-w * 0.44, h * 0.3);
-  ctx.lineTo(-w * 0.12, h * 0.22);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(10, 10, 10, 0.9)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-  ctx.stroke();
+  // Base dark gunmetal grey
+  ctx.fillStyle = '#1c1c20';
+  ctx.fillRect(0, 0, size, size);
+  
+  // Draw randomized overlapping metal armor panels
+  ctx.strokeStyle = '#0a0a0c';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 60; i++) {
+    const w = 50 + Math.random() * 150;
+    const h = 50 + Math.random() * 150;
+    const x = Math.random() * (size - w);
+    const y = Math.random() * (size - h);
+    
+    // Panel shade variation (strict monochrome)
+    const shade = 20 + Math.floor(Math.random() * 24);
+    ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+    ctx.fillRect(x, y, w, h);
+    
+    // Panel borders (seam lines)
+    ctx.strokeRect(x, y, w, h);
+  }
+  
+  // Add fine scratches and weathering streaks
+  ctx.globalAlpha = 0.15;
+  for (let i = 0; i < 4000; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const len = 2 + Math.random() * 8;
+    ctx.strokeStyle = Math.random() > 0.5 ? '#ffffff' : '#000000';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + (Math.random() - 0.5) * len, y + (Math.random() - 0.5) * len);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1.0;
 
-  ctx.beginPath();
-  ctx.moveTo(w * 0.08, -h * 0.1);
-  ctx.lineTo(w * 0.5, h * 0.15);
-  ctx.lineTo(w * 0.44, h * 0.3);
-  ctx.lineTo(w * 0.12, h * 0.22);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(10, 10, 10, 0.9)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-  ctx.stroke();
-
-  // Hull Body
-  ctx.beginPath();
-  ctx.moveTo(0, -h * 0.5);
-  ctx.lineTo(-w * 0.07, -h * 0.1);
-  ctx.lineTo(-w * 0.12, h * 0.22);
-  ctx.lineTo(-w * 0.08, h * 0.4);
-  ctx.lineTo(w * 0.08, h * 0.4);
-  ctx.lineTo(w * 0.12, h * 0.22);
-  ctx.lineTo(w * 0.07, -h * 0.1);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(12, 12, 12, 0.95)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.stroke();
-
-  // Bridge
-  ctx.beginPath();
-  ctx.moveTo(0, -h * 0.3);
-  ctx.lineTo(-w * 0.04, -h * 0.12);
-  ctx.lineTo(-w * 0.03, -h * 0.04);
-  ctx.lineTo(w * 0.03, -h * 0.04);
-  ctx.lineTo(w * 0.04, -h * 0.12);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(22, 22, 22, 0.9)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(-w * 0.02, -h * 0.3);
-  ctx.lineTo(-w * 0.06, -h * 0.4);
-  ctx.moveTo(w * 0.02, -h * 0.3);
-  ctx.lineTo(w * 0.06, -h * 0.4);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-  ctx.stroke();
-
-  // Engine Pods
-  ctx.fillStyle = 'rgba(15, 15, 15, 0.95)';
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-  ctx.fillRect(-w * 0.12, h * 0.4, w * 0.035, h * 0.08);
-  ctx.strokeRect(-w * 0.12, h * 0.4, w * 0.035, h * 0.08);
-  ctx.fillRect(-w * 0.05, h * 0.4, w * 0.025, h * 0.06);
-  ctx.strokeRect(-w * 0.05, h * 0.4, w * 0.025, h * 0.06);
-  ctx.fillRect(w * 0.025, h * 0.4, w * 0.025, h * 0.06);
-  ctx.strokeRect(w * 0.025, h * 0.4, w * 0.025, h * 0.06);
-  ctx.fillRect(w * 0.085, h * 0.4, w * 0.035, h * 0.08);
-  ctx.strokeRect(w * 0.085, h * 0.4, w * 0.035, h * 0.08);
-
-  // Turrets
-  ctx.beginPath();
-  ctx.arc(-w * 0.22, h * 0.18, 4, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(25, 25, 25, 0.9)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(w * 0.22, h * 0.18, 4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  // Viewports
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-  ctx.fillRect(-w * 0.06, h * 0.05, 2, 4);
-  ctx.fillRect(-w * 0.06, h * 0.12, 2, 4);
-  ctx.fillRect(-w * 0.06, h * 0.19, 2, 4);
-  ctx.fillRect(w * 0.05, h * 0.05, 2, 4);
-  ctx.fillRect(w * 0.05, h * 0.12, 2, 4);
-  ctx.fillRect(w * 0.05, h * 0.19, 2, 4);
-
-  // Panel details
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.beginPath();
-  ctx.moveTo(-w * 0.05, -h * 0.1); ctx.lineTo(w * 0.05, -h * 0.1);
-  ctx.moveTo(-w * 0.07, h * 0.05); ctx.lineTo(w * 0.07, h * 0.05);
-  ctx.moveTo(-w * 0.09, h * 0.22); ctx.lineTo(w * 0.09, h * 0.22);
-  ctx.moveTo(0, -h * 0.12); ctx.lineTo(0, h * 0.4);
-  ctx.moveTo(-w * 0.1, h * 0.1); ctx.lineTo(-w * 0.4, h * 0.25);
-  ctx.moveTo(w * 0.1, h * 0.1); ctx.lineTo(w * 0.4, h * 0.25);
-  ctx.stroke();
-
-  ctx.restore();
+  const texture = new THREE.CanvasTexture(canvasTex);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2, 6);
+  return texture;
 }
 
-function drawEngineThrust(ctx, x, y, width, height, time) {
-  const w = 150;
-  const h = 155;
+// Recreates the exact high-fidelity capital-class warship model programmatically
+function createVanguardModel() {
+  const shipGroup = new THREE.Group();
 
-  const nozzles = [
-    { rx: -w * 0.1025, ry: h * 0.48, isOuter: true, index: 0 },
-    { rx: -w * 0.0375, ry: h * 0.46, isOuter: false, index: 1 },
-    { rx: w * 0.0375, ry: h * 0.46, isOuter: false, index: 2 },
-    { rx: w * 0.1025, ry: h * 0.48, isOuter: true, index: 3 }
+  // Ship material properties per user request
+  const shipMaterial = new THREE.MeshStandardMaterial({
+    color: 0x5a5a65,       // steel-grey gunmetal for high visibility and contrast
+    roughness: 0.35,       // polished metallic roughness for specular edge catch
+    metalness: 0.85,       // highly metallic gunmetal
+    bumpMap: proceduralTex,
+    bumpScale: 0.035,      // increased bump scale for deeper surface panel textures
+    roughnessMap: proceduralTex
+  });
+
+  const emissiveWhiteMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.95
+  });
+
+  const glowBlueMat = new THREE.MeshBasicMaterial({
+    color: 0xd0e0ff,
+    transparent: true,
+    opacity: 0.9
+  });
+
+  // HULL CONFIGURATION
+  // Elongated capital-class warship, approximately 8:1 length-to-width ratio.
+  // Dual parallel hull bodies running the full length separated by a recessed channel.
+  // Needle-sharp nose tapering from a broad mid-section.
+  const leftHullGroup = new THREE.Group();
+  const rightHullGroup = new THREE.Group();
+  
+  const slices = 40;
+  const sliceLen = 8.0 / slices; // 0.2 units per slice
+
+  for (let i = 0; i < slices; i++) {
+    // z ranges from -4.0 (stern) to +4.0 (nose)
+    const z = -4.0 + (i + 0.5) * sliceLen;
+    
+    // Tapering scale
+    let taper = 1.0;
+    if (z > 0.5) {
+      // Needle-sharp nose tapering from a broad mid-section
+      taper = (4.0 - z) / 3.5;
+    } else if (z < -3.0) {
+      // Taper slightly at the stern
+      taper = 0.85 + (z + 4.0) * 0.15;
+    }
+
+    const w = 0.38 * taper;
+    const h = 0.24 * taper;
+
+    // Recessed panel lines every 6 slices + physical segment gaps between every slice
+    const isPanelGap = (i % 6 === 0);
+    const scaleFactor = isPanelGap ? 0.88 : 1.0;
+
+    // A. Main inner structural core
+    const sliceGeo = new THREE.BoxGeometry(w * scaleFactor * 0.7, h * scaleFactor, sliceLen * 0.85);
+    
+    const leftSlice = new THREE.Mesh(sliceGeo, shipMaterial);
+    leftSlice.position.set(-0.25 * taper, 0, z);
+    leftSlice.castShadow = true;
+    leftSlice.receiveShadow = true;
+    leftHullGroup.add(leftSlice);
+
+    const rightSlice = new THREE.Mesh(sliceGeo, shipMaterial);
+    rightSlice.position.set(0.25 * taper, 0, z);
+    rightSlice.castShadow = true;
+    rightSlice.receiveShadow = true;
+    rightHullGroup.add(rightSlice);
+
+    // B. Outer sloped armor plates on flanks to create faceted structural depth
+    const slopeGeo = new THREE.BoxGeometry(w * scaleFactor * 0.35, h * scaleFactor * 0.85, sliceLen * 0.82);
+    
+    const leftSlope = new THREE.Mesh(slopeGeo, shipMaterial);
+    leftSlope.position.set(-0.25 * taper - w * 0.22, 0, z);
+    leftSlope.rotation.z = Math.PI / 12; // sloped inwards
+    leftSlope.castShadow = true;
+    leftSlope.receiveShadow = true;
+    leftHullGroup.add(leftSlope);
+
+    const rightSlope = new THREE.Mesh(slopeGeo, shipMaterial);
+    rightSlope.position.set(0.25 * taper + w * 0.22, 0, z);
+    rightSlope.rotation.z = -Math.PI / 12; // sloped inwards
+    rightSlope.castShadow = true;
+    rightSlope.receiveShadow = true;
+    rightHullGroup.add(rightSlope);
+  }
+
+  shipGroup.add(leftHullGroup);
+  shipGroup.add(rightHullGroup);
+
+  // ANGLED SPACE-TRUSS CROSS CONNECTORS (scaffold layout in the recessed center slot)
+  for (let tz = -3.2; tz <= 2.8; tz += 0.6) {
+    const strutGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.48);
+    
+    const strut1 = new THREE.Mesh(strutGeo, shipMaterial);
+    strut1.position.set(0, 0, tz + 0.15);
+    strut1.rotation.set(0, 0, Math.PI / 4); // X-brace cross strut
+    strut1.castShadow = true;
+    shipGroup.add(strut1);
+
+    const strut2 = new THREE.Mesh(strutGeo, shipMaterial);
+    strut2.position.set(0, 0, tz + 0.15);
+    strut2.rotation.set(0, 0, -Math.PI / 4); // X-brace cross strut
+    strut2.castShadow = true;
+    shipGroup.add(strut2);
+  }
+
+  // TRENCH PIPING & VERTICAL STRUCTURAL RIBS
+  // Deep horizontal trench detail with metallic piping running along the flanks
+  const pipeGeo = new THREE.CylinderGeometry(0.012, 0.012, 7.2);
+  
+  const leftPipe = new THREE.Mesh(pipeGeo, shipMaterial);
+  leftPipe.position.set(-0.43, 0, 0);
+  leftPipe.rotation.x = Math.PI / 2;
+  leftPipe.castShadow = true;
+  shipGroup.add(leftPipe);
+
+  const rightPipe = new THREE.Mesh(pipeGeo, shipMaterial);
+  rightPipe.position.set(0.43, 0, 0);
+  rightPipe.rotation.x = Math.PI / 2;
+  rightPipe.castShadow = true;
+  shipGroup.add(rightPipe);
+
+  for (let rz = -3.2; rz <= 2.8; rz += 0.8) {
+    const ribGeo = new THREE.BoxGeometry(0.02, 0.22, 0.04);
+    
+    const leftRib = new THREE.Mesh(ribGeo, shipMaterial);
+    leftRib.position.set(-0.435, 0, rz);
+    leftRib.castShadow = true;
+    shipGroup.add(leftRib);
+
+    const rightRib = new THREE.Mesh(ribGeo, shipMaterial);
+    rightRib.position.set(0.435, 0, rz);
+    rightRib.castShadow = true;
+    shipGroup.add(rightRib);
+  }
+
+  // TIERED BRIDGE SUPERSTRUCTURE (sloped command deck & sensor mast)
+  const bridgeGroup = new THREE.Group();
+  bridgeGroup.position.set(0, 0.14, -1.0);
+
+  // Base sloped deck
+  const bBase = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.8), shipMaterial);
+  bBase.castShadow = true;
+  bBase.receiveShadow = true;
+  bridgeGroup.add(bBase);
+
+  // Command deck box
+  const bDeck = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.08, 0.4), shipMaterial);
+  bDeck.position.set(0, 0.08, -0.1);
+  bDeck.castShadow = true;
+  bDeck.receiveShadow = true;
+  bridgeGroup.add(bDeck);
+
+  // Glowing command bridge visor slot
+  const win = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.025, 0.04), glowBlueMat);
+  win.position.set(0, 0.09, 0.11);
+  bridgeGroup.add(win);
+
+  // Communication sensor mast behind the bridge
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.35, 4), shipMaterial);
+  mast.position.set(0, 0.16, -0.2);
+  mast.castShadow = true;
+  bridgeGroup.add(mast);
+
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.008, 0.008), shipMaterial);
+  bar.position.set(0, 0.3, -0.2);
+  bridgeGroup.add(bar);
+
+  shipGroup.add(bridgeGroup);
+
+  // DORSAL WEAPON TURRETS
+  // 4 detailed defensive turrets along the ship spine
+  const turretPositions = [-2.2, -0.8, 0.6, 1.8];
+  turretPositions.forEach(zPos => {
+    const tGroup = new THREE.Group();
+    tGroup.position.set(0, 0.14, zPos);
+
+    const tBase = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.015, 8), shipMaterial);
+    tBase.castShadow = true;
+    tGroup.add(tBase);
+
+    const tHead = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.035, 0.06), shipMaterial);
+    tHead.position.y = 0.02;
+    tHead.castShadow = true;
+    tGroup.add(tHead);
+
+    const barrelGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.15, 4);
+    
+    const leftB = new THREE.Mesh(barrelGeo, shipMaterial);
+    leftB.position.set(-0.016, 0.025, 0.07);
+    leftB.rotation.x = Math.PI / 2 - 0.15;
+    leftB.castShadow = true;
+    tGroup.add(leftB);
+
+    const rightB = new THREE.Mesh(barrelGeo, shipMaterial);
+    rightB.position.set(0.016, 0.025, 0.07);
+    rightB.rotation.x = Math.PI / 2 - 0.15;
+    rightB.castShadow = true;
+    tGroup.add(rightB);
+
+    shipGroup.add(tGroup);
+  });
+
+  // RECESSED HANGAR BAYS
+  // Twin hangars on the flanks with glowing runways
+  for (let side of [-1, 1]) {
+    const hangarGroup = new THREE.Group();
+    hangarGroup.position.set(side * 0.34, -0.01, -2.2);
+
+    const opening = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.08, 0.4), new THREE.MeshBasicMaterial({ color: 0x010102 }));
+    hangarGroup.add(opening);
+
+    const lightStrip = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.005, 0.38), new THREE.MeshBasicMaterial({ color: 0x50c0ff, transparent: true, opacity: 0.85 }));
+    lightStrip.position.set(-side * 0.008, -0.032, 0);
+    hangarGroup.add(lightStrip);
+
+    shipGroup.add(hangarGroup);
+  }
+
+  // LONGITUDINAL RIDGE DETAILS
+  const leftRidgeGeo = new THREE.BoxGeometry(0.10, 0.05, 7.8);
+  const leftRidge = new THREE.Mesh(leftRidgeGeo, shipMaterial);
+  leftRidge.position.set(-0.25, 0.14, 0);
+  leftRidge.castShadow = true;
+  leftRidge.receiveShadow = true;
+  shipGroup.add(leftRidge);
+
+  const rightRidgeGeo = new THREE.BoxGeometry(0.10, 0.05, 7.8);
+  const rightRidge = new THREE.Mesh(rightRidgeGeo, shipMaterial);
+  rightRidge.position.set(0.25, 0.14, 0);
+  rightRidge.castShadow = true;
+  rightRidge.receiveShadow = true;
+  shipGroup.add(rightRidge);
+
+  // RECTANGULAR MODULE BLOCKS
+  const moduleCount = 28;
+  for (let k = 0; k < moduleCount; k++) {
+    const isLeft = Math.random() > 0.5;
+    const zPos = -3.2 + Math.random() * 5.0;
+    const mw = 0.08 + Math.random() * 0.10;
+    const mh = 0.04 + Math.random() * 0.06;
+    const md = 0.15 + Math.random() * 0.30;
+
+    const modGeo = new THREE.BoxGeometry(mw, mh, md);
+    const mod = new THREE.Mesh(modGeo, shipMaterial);
+    
+    const xPos = (isLeft ? -0.25 : 0.25) + (Math.random() - 0.5) * 0.08;
+    mod.position.set(xPos, 0.15, zPos);
+    mod.castShadow = true;
+    mod.receiveShadow = true;
+    shipGroup.add(mod);
+  }
+
+  // ANTENNA ARRAYS & SENSOR BLISTERS
+  for (let side of [-1, 1]) {
+    for (let k = 0; k < 4; k++) {
+      const zPos = -2.5 + k * 1.5;
+      const antGroup = new THREE.Group();
+      antGroup.position.set(side * 0.44, 0, zPos);
+      
+      const mastGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.3, 4);
+      const mast = new THREE.Mesh(mastGeo, shipMaterial);
+      mast.rotation.z = side * Math.PI / 3;
+      mast.castShadow = true;
+      antGroup.add(mast);
+
+      const barGeo = new THREE.BoxGeometry(0.06, 0.008, 0.008);
+      const bar = new THREE.Mesh(barGeo, shipMaterial);
+      bar.position.y = 0.1;
+      bar.rotation.z = side * Math.PI / 3;
+      antGroup.add(bar);
+      
+      shipGroup.add(antGroup);
+    }
+
+    for (let k = 0; k < 6; k++) {
+      const zPos = -3.0 + k * 1.2;
+      const domeGeo = new THREE.SphereGeometry(0.035, 8, 8);
+      const dome = new THREE.Mesh(domeGeo, shipMaterial);
+      dome.scale.set(1.5, 0.6, 1.5);
+      dome.position.set(side * 0.42, 0.02, zPos);
+      dome.rotation.z = side * Math.PI / 2;
+      dome.castShadow = true;
+      shipGroup.add(dome);
+    }
+  }
+
+  // FOUR SWEPT-BACK DELTA FINS AT THE STERN
+  const finShape = new THREE.Shape();
+  finShape.moveTo(0, 0);
+  finShape.lineTo(0.2, 0.8);
+  finShape.lineTo(0.6, 0.2);
+  finShape.lineTo(0.4, 0.0);
+  finShape.closePath();
+
+  const extrudeSettings = {
+    depth: 0.015,
+    bevelEnabled: true,
+    bevelSegments: 2,
+    steps: 1,
+    bevelSize: 0.005,
+    bevelThickness: 0.005
+  };
+  const finGeo = new THREE.ExtrudeGeometry(finShape, extrudeSettings);
+  finGeo.center();
+
+  const finScale = 1.2;
+
+  const leftDorsal = new THREE.Mesh(finGeo, shipMaterial);
+  leftDorsal.scale.set(finScale, finScale, finScale);
+  leftDorsal.position.set(-0.35, 0.35, -3.4);
+  leftDorsal.rotation.set(-0.3, 0.2, Math.PI / 6);
+  leftDorsal.castShadow = true;
+  leftDorsal.receiveShadow = true;
+  shipGroup.add(leftDorsal);
+
+  const rightDorsal = new THREE.Mesh(finGeo, shipMaterial);
+  rightDorsal.scale.set(finScale, finScale, finScale);
+  rightDorsal.position.set(0.35, 0.35, -3.4);
+  rightDorsal.rotation.set(-0.3, -0.2, -Math.PI / 6);
+  rightDorsal.castShadow = true;
+  rightDorsal.receiveShadow = true;
+  shipGroup.add(rightDorsal);
+
+  const leftVentral = new THREE.Mesh(finGeo, shipMaterial);
+  leftVentral.scale.set(finScale, finScale, finScale);
+  leftVentral.position.set(-0.35, -0.35, -3.4);
+  leftVentral.rotation.set(0.3, 0.2, 5 * Math.PI / 6);
+  leftVentral.castShadow = true;
+  leftVentral.receiveShadow = true;
+  shipGroup.add(leftVentral);
+
+  const rightVentral = new THREE.Mesh(finGeo, shipMaterial);
+  rightVentral.scale.set(finScale, finScale, finScale);
+  rightVentral.position.set(0.35, -0.35, -3.4);
+  rightVentral.rotation.set(0.3, -0.2, -5 * Math.PI / 6);
+  rightVentral.castShadow = true;
+  rightVentral.receiveShadow = true;
+  shipGroup.add(rightVentral);
+
+  // TWO THRUSTER NOZZLE CLUSTERS AT THE STERN
+  const nozzlePositions = [
+    [-0.32, 0.0, -4.0],
+    [-0.12, 0.0, -4.0]
   ];
 
-  nozzles.forEach(nozzle => {
-    const nx = x + nozzle.rx;
-    const ny = y + nozzle.ry;
+  nozzlePositions.forEach(pos => {
+    const outerGeo = new THREE.CylinderGeometry(0.08, 0.09, 0.28, 8);
+    const outer = new THREE.Mesh(outerGeo, shipMaterial);
+    outer.position.set(pos[0], pos[1], pos[2]);
+    outer.rotation.x = Math.PI / 2;
+    outer.castShadow = true;
+    shipGroup.add(outer);
 
-    const linesCount = 7;
-    const baseLength = nozzle.isOuter ? 60 : 35;
-    const baseWidth = nozzle.isOuter ? 8 : 4;
-    
-    ctx.save();
-    ctx.translate(nx, ny);
-
-    for (let i = 0; i < linesCount; i++) {
-      const spreadX = (i / (linesCount - 1) - 0.5) * baseWidth;
-      const flicker = Math.sin(time * 22 + nozzle.index * 7 + i) * 0.35 + 0.65;
-      const lengthOffset = Math.random() * 12 - 6;
-      const lineLength = (baseLength * flicker) + lengthOffset;
-      
-      ctx.beginPath();
-      ctx.moveTo(spreadX, 0);
-      ctx.lineTo(spreadX * 1.5, lineLength);
-      
-      const grad = ctx.createLinearGradient(0, 0, 0, lineLength);
-      const opacity = (nozzle.isOuter ? 0.65 : 0.4) * (0.6 + Math.random() * 0.4);
-      grad.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
-      grad.addColorStop(0.3, `rgba(220, 220, 220, ${opacity * 0.7})`);
-      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 0.5 + Math.random() * 0.5;
-      ctx.stroke();
-    }
-    ctx.restore();
+    const innerGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 8);
+    const inner = new THREE.Mesh(innerGeo, emissiveWhiteMat);
+    inner.position.set(pos[0], pos[1], pos[2] - 0.12);
+    inner.rotation.x = Math.PI / 2;
+    shipGroup.add(inner);
   });
+
+  return shipGroup;
 }
 
-function drawEnemyShip(ctx, enemy, time) {
-  const size = enemy.size;
-  ctx.save();
-  ctx.translate(enemy.currentX, enemy.currentY);
+// Injects the cinematic vignette and animated film grain DOM layers
+function initCinematicOverlays() {
+  if (document.getElementById('cinematic-film-grain')) return;
+
+  // Create 128x128 film grain base noise texture in memory
+  const noiseCanvas = document.createElement('canvas');
+  noiseCanvas.width = 128;
+  noiseCanvas.height = 128;
+  const noiseCtx = noiseCanvas.getContext('2d');
+  const noiseImg = noiseCtx.createImageData(128, 128);
+  const noiseData = noiseImg.data;
+  for (let i = 0; i < noiseData.length; i += 4) {
+    const val = Math.floor(Math.random() * 255);
+    noiseData[i] = val;
+    noiseData[i+1] = val;
+    noiseData[i+2] = val;
+    noiseData[i+3] = 30; // opacity transparency
+  }
+  noiseCtx.putImageData(noiseImg, 0, 0);
+
+  // Overlay container div
+  const grainDiv = document.createElement('div');
+  grainDiv.id = 'cinematic-film-grain';
+  grainDiv.style.position = 'fixed';
+  grainDiv.style.top = '0';
+  grainDiv.style.left = '0';
+  grainDiv.style.width = '100vw';
+  grainDiv.style.height = '100vh';
+  grainDiv.style.zIndex = '999';
+  grainDiv.style.pointerEvents = 'none';
+  grainDiv.style.opacity = '0.12'; // 12% opacity
+  grainDiv.style.backgroundImage = `url(${noiseCanvas.toDataURL()})`;
+  grainDiv.style.backgroundRepeat = 'repeat';
+  document.body.appendChild(grainDiv);
+
+  // Vignette darkening corners to pure black
+  const vignetteDiv = document.createElement('div');
+  vignetteDiv.id = 'cinematic-vignette';
+  vignetteDiv.style.position = 'fixed';
+  vignetteDiv.style.top = '0';
+  vignetteDiv.style.left = '0';
+  vignetteDiv.style.width = '100vw';
+  vignetteDiv.style.height = '100vh';
+  vignetteDiv.style.zIndex = '998';
+  vignetteDiv.style.pointerEvents = 'none';
+  vignetteDiv.style.background = 'radial-gradient(circle, transparent 35%, rgba(0, 0, 0, 0.95) 100%)';
+  document.body.appendChild(vignetteDiv);
+}
+
+// Update loop for film grain position (animates at 24fps)
+function updateFilmGrain(time) {
+  const grainDiv = document.getElementById('cinematic-film-grain');
+  if (grainDiv && time - lastGrainTime > 1.0 / 24.0) { // 24fps
+    const x = Math.floor(Math.random() * 128);
+    const y = Math.floor(Math.random() * 128);
+    grainDiv.style.backgroundPosition = `${x}px ${y}px`;
+    lastGrainTime = time;
+  }
+}
+
+// Initialize Three.js WebGL Scene
+function init3D() {
+  // 1. Renderer Setup
+  renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
   
-  const dx = enemy.currentX - enemy.lastX;
-  const dy = enemy.currentY - enemy.lastY;
-  const angle = Math.atan2(dy, dx) - Math.PI / 2;
-  ctx.rotate(angle);
+  // Enable shadows
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  ctx.lineWidth = 0.75;
-  ctx.strokeStyle = `rgba(255, 255, 255, ${0.35 + Math.sin(time * 0.005 + enemy.phase) * 0.1})`;
-  ctx.fillStyle = 'rgba(5, 5, 5, 0.9)';
+  // 2. Scene & Camera Setup
+  scene = new THREE.Scene();
+  clock = new THREE.Clock();
+  
+  // Set up camera corresponding to a 3/4 upper-left camera view
+  camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 150);
+  camera.position.set(-4.5, 2.5, -6.5);
+  camera.lookAt(0, 0, 0); // Camera centers at origin
 
-  ctx.beginPath();
-  ctx.moveTo(0, size * 0.4);
-  ctx.lineTo(-size * 0.15, size * 0.1);
-  ctx.lineTo(-size * 0.45, -size * 0.2);
-  ctx.lineTo(-size * 0.12, -size * 0.05);
-  ctx.lineTo(-size * 0.1, -size * 0.35);
-  ctx.lineTo(0, -size * 0.2);
-  ctx.lineTo(size * 0.1, -size * 0.35);
-  ctx.lineTo(size * 0.12, -size * 0.05);
-  ctx.lineTo(size * 0.45, -size * 0.2);
-  ctx.lineTo(size * 0.15, size * 0.1);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
+  // 3. Cinematic Hard Lighting setup (Single hard rim light from upper-left + front fill light)
+  const dirLight = new THREE.DirectionalLight(0xffffff, 2.0); // single hard rim light from behind
+  dirLight.position.set(-8, 6, 8); 
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
+  dirLight.shadow.camera.near = 0.5;
+  dirLight.shadow.camera.far = 25;
+  dirLight.shadow.camera.left = -6;
+  dirLight.shadow.camera.right = 6;
+  dirLight.shadow.camera.top = 6;
+  dirLight.shadow.camera.bottom = -6;
+  dirLight.shadow.bias = -0.0005;
+  scene.add(dirLight);
 
-  const exhaustLines = 5;
-  const length = size * 0.4;
-  const ports = [-size * 0.07, size * 0.07];
+  // Dynamic front fill light placed next to the camera to illuminate the details facing the camera (increased to 1.2)
+  const cameraFillLight = new THREE.DirectionalLight(0xffffff, 1.2); 
+  cameraFillLight.position.set(-4.5, 3.5, -6.5); // aligns with camera view position
+  scene.add(cameraFillLight);
 
-  ports.forEach((px, idx) => {
-    for (let i = 0; i < exhaustLines; i++) {
-      const spread = (i / (exhaustLines - 1) - 0.5) * 3;
-      const flicker = Math.sin(time * 30 + enemy.id * 12 + i) * 0.3 + 0.7;
-      const lineLength = length * flicker * (0.8 + Math.random() * 0.4);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.20); // soft baseline ambient fill (increased to 0.20)
+  scene.add(ambientLight);
 
-      ctx.beginPath();
-      ctx.moveTo(px + spread, -size * 0.35);
-      ctx.lineTo(px + spread * 1.5, -size * 0.35 - lineLength);
+  // 4. Generate procedural textures & ship assemblies
+  proceduralTex = createProceduralNoiseTexture();
 
-      const grad = ctx.createLinearGradient(0, -size * 0.35, 0, -size * 0.35 - lineLength);
-      grad.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  vanguardGroup = new THREE.Group();
+  vanguardModel = new THREE.Group(); // Inner model for micro-animations
+  vanguardGroup.add(vanguardModel);
 
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    }
-  });
+  // Initial ship orientation: 3/4 view, ship nose pointing upper-right at 25 degrees, slight roll of 15 degrees clockwise
+  vanguardGroup.position.set(-1.4, -0.9, 1.0); // Shift ship further left and down in the viewport
+  vanguardGroup.rotation.set(0.2, -0.6, 0.26); // pitch, yaw, roll
+  scene.add(vanguardGroup);
 
-  ctx.restore();
-}
+  const shipMesh = createVanguardModel();
+  vanguardModel.add(shipMesh);
 
-function spawnHeroLaser(heroX, heroY) {
-  if (enemies.length === 0) return;
-  const targetEnemy = enemies[Math.floor(Math.random() * enemies.length)];
-  const isLeft = Math.random() > 0.5;
-  const turretOffsetX = isLeft ? -150 * 0.22 : 150 * 0.22;
-  const turretOffsetY = 155 * 0.18;
+  // 5. Custom ShaderMaterial Starfield (800 point sprites twinkling independently)
+  const starCount = 800;
+  const starGeo = new THREE.BufferGeometry();
+  const starPositions = new Float32Array(starCount * 3);
+  const starSizes = new Float32Array(starCount);
+  const starSpeeds = new Float32Array(starCount);
+  const starPhases = new Float32Array(starCount);
 
-  lasers.push({
-    id: Math.random(),
-    isHero: true,
-    sourceX: heroX + turretOffsetX,
-    sourceY: heroY + turretOffsetY,
-    targetEnemyId: targetEnemy.id,
-    targetX: targetEnemy.currentX,
-    targetY: targetEnemy.currentY,
-    progress: 0,
-    age: 0,
-    duration: 500,
-    explosionTriggered: false
-  });
-}
+  for (let i = 0; i < starCount; i++) {
+    // Spread stars out far in the background
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos((Math.random() - 0.5) * 2);
+    const dist = 75 + Math.random() * 20;
 
-function spawnEnemyLaser() {
-  const shooter = enemies[Math.floor(Math.random() * enemies.length)];
-  const side = Math.random() > 0.5 ? -1 : 1;
-  const targetX = canvas.width / 2 + (side * (200 + Math.random() * 300));
-  const targetY = canvas.height + 100;
+    starPositions[i * 3] = Math.sin(phi) * Math.cos(theta) * dist;
+    starPositions[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * dist;
+    starPositions[i * 3 + 2] = Math.cos(phi) * dist;
 
-  lasers.push({
-    id: Math.random(),
-    isHero: false,
-    sourceX: shooter.currentX,
-    sourceY: shooter.currentY,
-    targetX: targetX,
-    targetY: targetY,
-    progress: 0,
-    age: 0,
-    duration: 500,
-    explosionTriggered: false
-  });
-}
-
-function spawnExplosion(x, y) {
-  if (explosions.length >= 3) {
-    explosions.shift();
+    // Twinkling sizes 0.3px to 1.8px
+    starSizes[i] = 0.3 + Math.random() * 1.5;
+    // Twinkling durations 0.3s to 2.5s -> frequency = 2*PI / duration
+    const duration = 0.3 + Math.random() * 2.2;
+    starSpeeds[i] = (Math.PI * 2) / duration;
+    starPhases[i] = Math.random() * Math.PI * 2;
   }
-  explosions.push({
-    x: x,
-    y: y,
-    radius: 0,
-    maxRadius: 20,
-    duration: 800,
-    age: 0
-  });
-}
 
-// Loop update
-let lastTime = 0;
-let nextHeroLaserTime = 2000;
-let nextEnemyLaserTime = 3000;
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+  starGeo.setAttribute('aSize', new THREE.BufferAttribute(starSizes, 1));
+  starGeo.setAttribute('aTwinkleSpeed', new THREE.BufferAttribute(starSpeeds, 1));
+  starGeo.setAttribute('aPhase', new THREE.BufferAttribute(starPhases, 1));
 
-function gameLoop(time) {
-  if (!lastTime) lastTime = time;
-  const delta = Math.min(time - lastTime, 100);
-  lastTime = time;
-
-  ctx.fillStyle = '#000000';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Stars
-  stars.forEach(star => {
-    let opacity = star.opacity;
-    let radius = star.radius;
-    if (star.type === 'twinkle') {
-      opacity = star.opacity * (0.3 + 0.7 * Math.abs(Math.sin(time * 0.001 * 1.5 + star.offset)));
-    } else if (star.type === 'pulse') {
-      radius = star.radius * (0.85 + 0.15 * Math.sin(time * 0.001 * 0.8 + star.offset));
-      opacity = star.opacity * (0.7 + 0.3 * Math.sin(time * 0.001 * 0.8 + star.offset));
-    }
-    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-    ctx.beginPath();
-    ctx.arc(star.x % canvas.width, star.y % canvas.height, radius, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // Debris
-  debrisField.forEach(debris => {
-    debris.x += debris.dx;
-    debris.y += debris.dy;
-    debris.rotation += debris.rotSpeed;
-    if (debris.x < -20) debris.x = canvas.width + 20;
-    if (debris.x > canvas.width + 20) debris.x = -20;
-    if (debris.y < -20) debris.y = canvas.height + 20;
-    if (debris.y > canvas.height + 20) debris.y = -20;
-    drawDebris(ctx, debris);
-  });
-
-  // Enemies
-  enemies.forEach(enemy => {
-    enemy.lastX = enemy.currentX;
-    enemy.lastY = enemy.currentY;
-    const centerX = enemy.cx * canvas.width;
-    const centerY = enemy.cy * canvas.height;
-    enemy.currentX = centerX + Math.sin(time * enemy.speed + enemy.phase) * enemy.rx;
-    enemy.currentY = centerY + Math.cos(time * enemy.speed + enemy.phase) * enemy.ry;
-    drawEnemyShip(ctx, enemy, time);
-  });
-
-  // Hero
-  const heroX = canvas.width / 2;
-  const bobY = Math.sin(time * 0.001 * 0.4) * 6;
-  const heroY = canvas.height - 180 + bobY;
-  drawEngineThrust(ctx, heroX, heroY, 150, 155, time);
-  drawHeroShip(ctx, heroX, heroY, time);
-
-  // Lasers
-  for (let i = lasers.length - 1; i >= 0; i--) {
-    const laser = lasers[i];
-    laser.age += delta;
-
-    if (laser.isHero) {
-      const targetEnemy = enemies.find(e => e.id === laser.targetEnemyId);
-      if (targetEnemy) {
-        laser.targetX = targetEnemy.currentX;
-        laser.targetY = targetEnemy.currentY;
+  const starMat = new THREE.ShaderMaterial({
+    vertexShader: `
+      attribute float aSize;
+      attribute float aTwinkleSpeed;
+      attribute float aPhase;
+      varying float vBrightness;
+      uniform float uTime;
+      void main() {
+        vBrightness = 0.35 + 0.65 * sin(uTime * aTwinkleSpeed + aPhase);
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        gl_PointSize = aSize * (350.0 / -mvPosition.z);
       }
-    }
+    `,
+    fragmentShader: `
+      varying float vBrightness;
+      uniform vec3 uColor;
+      void main() {
+        vec2 uv = gl_PointCoord - vec2(0.5);
+        if (length(uv) > 0.5) discard;
+        float dist = length(uv);
+        float alpha = smoothstep(0.5, 0.1, dist) * vBrightness;
+        gl_FragColor = vec4(uColor, alpha);
+      }
+    `,
+    uniforms: {
+      uTime: { value: 0.0 },
+      uColor: { value: new THREE.Color(0xd0e0ff) } // cold blue-white
+    },
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
 
-    const extendDuration = 300;
-    const fadeDuration = 200;
-    let progress = 1;
-    let opacity = 1;
+  starfield = new THREE.Points(starGeo, starMat);
+  scene.add(starfield);
 
-    if (laser.age < extendDuration) {
-      progress = laser.age / extendDuration;
-      opacity = 1;
-    } else {
-      progress = 1;
-      opacity = 1 - (laser.age - extendDuration) / fadeDuration;
-    }
+  // 6. Two long thruster plume streaks (1 inner core, 1 outer diffused)
+  // Inner plume: tight bright-white core (Y translated and rotated)
+  const innerPlumeGeo = new THREE.CylinderGeometry(0.012, 0.012, 6.0, 8, 1, true);
+  innerPlumeGeo.translate(0, -3.0, 0);
+  innerPlumeGeo.rotateX(Math.PI / 2);
 
-    if (laser.age >= extendDuration && !laser.explosionTriggered) {
-      laser.explosionTriggered = true;
-      if (laser.isHero) spawnExplosion(laser.targetX, laser.targetY);
-    }
+  // Outer plume: wider diffused cone
+  const outerPlumeGeo = new THREE.ConeGeometry(0.18, 11.0, 8, 1, true);
+  outerPlumeGeo.translate(0, -5.5, 0);
+  outerPlumeGeo.rotateX(Math.PI / 2);
 
-    if (laser.age < laser.duration) {
-      const endX = laser.sourceX + (laser.targetX - laser.sourceX) * progress;
-      const endY = laser.sourceY + (laser.targetY - laser.sourceY) * progress;
+  innerPlumeMat = new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec2 vUv;
+      uniform float uFlicker;
+      void main() {
+        float fade = 1.0 - vUv.y;
+        float alpha = pow(fade, 1.2) * uFlicker;
+        gl_FragColor = vec4(1.0, 1.0, 1.0, alpha); // tight white core
+      }
+    `,
+    uniforms: {
+      uFlicker: { value: 1.0 }
+    },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
 
-      ctx.beginPath();
-      ctx.moveTo(laser.sourceX, laser.sourceY);
-      ctx.lineTo(endX, endY);
-      
-      const laserOpacity = Math.max(0, laser.isHero ? opacity : opacity * 0.3);
-      const grad = ctx.createLinearGradient(laser.sourceX, laser.sourceY, endX, endY);
-      grad.addColorStop(0, `rgba(255, 255, 255, ${laserOpacity})`);
-      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    } else {
-      lasers.splice(i, 1);
+  outerPlumeMat = new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec2 vUv;
+      uniform float uFlicker;
+      uniform vec3 uColor;
+      void main() {
+        float fade = 1.0 - vUv.y;
+        float alpha = pow(fade, 3.2) * uFlicker * 0.22;
+        gl_FragColor = vec4(uColor, alpha); // wide diffused blue-white cone
+      }
+    `,
+    uniforms: {
+      uFlicker: { value: 1.0 },
+      uColor: { value: new THREE.Color(0xd0e0ff) }
+    },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  const nozzleOffsets = [-0.32, -0.12];
+  nozzleOffsets.forEach(offsetX => {
+    const inner = new THREE.Mesh(innerPlumeGeo, innerPlumeMat);
+    inner.position.set(offsetX, 0, -4.0);
+    vanguardModel.add(inner);
+
+    const outer = new THREE.Mesh(outerPlumeGeo, outerPlumeMat);
+    outer.position.set(offsetX, 0, -4.0);
+    vanguardModel.add(outer);
+  });
+
+  // 7. Distant Planet Arc (Left-back sphere, only 35% upper-right limb visible)
+  const planetGeo = new THREE.SphereGeometry(12.0, 32, 32);
+  const planetMat = new THREE.MeshStandardMaterial({
+    color: 0x18181c, // deep grey-charcoal
+    roughness: 0.9,
+    metalness: 0.1
+  });
+  planetMesh = new THREE.Mesh(planetGeo, planetMat);
+  planetMesh.position.set(-15, -2, -25);
+  scene.add(planetMesh);
+
+  // Planet atmospheric rim glow in cold blue-white
+  const atmosMat = new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vViewPosition;
+      void main() {
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        vNormal = normalize(normalMatrix * normal);
+        vViewPosition = -mvPosition.xyz;
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vNormal;
+      varying vec3 vViewPosition;
+      uniform vec3 uColor;
+      void main() {
+        vec3 normal = normalize(vNormal);
+        vec3 viewDir = normalize(vViewPosition);
+        float intensity = pow(0.7 - dot(normal, viewDir), 2.5);
+        gl_FragColor = vec4(uColor, intensity * 0.9);
+      }
+    `,
+    uniforms: {
+      uColor: { value: new THREE.Color(0xd0e0ff) }
+    },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide
+  });
+
+  planetAtmosphere = new THREE.Mesh(planetGeo, atmosMat);
+  planetAtmosphere.position.copy(planetMesh.position);
+  planetAtmosphere.scale.setScalar(1.025);
+  scene.add(planetAtmosphere);
+
+  // 8. Dynamic Overlay injection
+  initCinematicOverlays();
+
+  // 9. Post Processing Pipeline setup (Bypassed if EffectComposer scripts aren't loaded on subpages)
+  if (typeof THREE.EffectComposer !== 'undefined') {
+    const renderScene = new THREE.RenderPass(scene, camera);
+    const bloomPass = new THREE.UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.4, // bloom strength
+      0.5, // bloom radius
+      0.9  // bloom threshold
+    );
+    composer = new THREE.EffectComposer(renderer);
+    composer.addPass(renderScene);
+    composer.addPass(bloomPass);
+  }
+
+  // 10. Listeners
+  window.addEventListener('resize', onWindowResize);
+}
+
+// Window resizing handler
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  if (composer) {
+    composer.setSize(window.innerWidth, window.innerHeight);
+  }
+}
+
+// 3D Battle Logic Update Loop
+function gameLoop(time) {
+  if (!renderer) return;
+
+  const timeSec = time * 0.001;
+
+  // A. Starfield Twinkle timer progress
+  if (starfield && starfield.material.uniforms) {
+    starfield.material.uniforms.uTime.value = timeSec;
+  }
+
+  // B. Thruster Plume 8-12fps Flicker updates
+  if (time - lastFlickerTime > 100.0) { // update at ~10fps
+    currentFlicker = 0.8 + Math.random() * 0.2;
+    lastFlickerTime = time;
+    if (innerPlumeMat && outerPlumeMat) {
+      innerPlumeMat.uniforms.uFlicker.value = currentFlicker;
+      outerPlumeMat.uniforms.uFlicker.value = currentFlicker;
     }
   }
 
-  // Explosions
-  for (let i = explosions.length - 1; i >= 0; i--) {
-    const exp = explosions[i];
-    exp.age += delta;
-    if (exp.age < exp.duration) {
-      const progress = exp.age / exp.duration;
-      ctx.beginPath();
-      ctx.arc(exp.x, exp.y, exp.maxRadius * progress, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${Math.max(0, 1 - progress)})`;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    } else {
-      explosions.splice(i, 1);
-    }
-  }
+  // C. Ship Micro-Animations
+  // (1) slow continuous roll rotation on Z axis at 0.0003 rad/frame
+  vanguardModel.rotation.z += 0.0003;
 
-  // Timers
-  nextHeroLaserTime -= delta;
-  if (nextHeroLaserTime <= 0) {
-    spawnHeroLaser(heroX, heroY);
-    nextHeroLaserTime = 2000 + Math.random() * 1000;
+  // (2) gentle sinusoidal bob on Y axis amplitude 0.8 units at 0.0008 rad/frame
+  bobAngle += 0.0008;
+  vanguardModel.position.y = Math.sin(bobAngle) * 0.8;
+
+  // (3) extremely slow forward drift on X at 0.00015 units/frame looping with reset
+  driftX += 0.00015;
+  if (driftX > 0.4) {
+    driftX = -0.4;
   }
-  nextEnemyLaserTime -= delta;
-  if (nextEnemyLaserTime <= 0) {
-    spawnEnemyLaser();
-    nextEnemyLaserTime = 3000 + Math.random() * 2000;
+  vanguardModel.position.x = driftX;
+
+  // D. Animate Film Grain Overlay
+  updateFilmGrain(time);
+
+  // E. Render scene (Bloom composer or Fallback)
+  if (composer) {
+    composer.render();
+  } else {
+    renderer.render(scene, camera);
   }
 
   requestAnimationFrame(gameLoop);
 }
+
+// Start Three.js Space Engine
+init3D();
 requestAnimationFrame(gameLoop);
 
 // ----------------------------------------------------
@@ -703,8 +1021,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Resets animation clock and handles resize when page is restored from cache (bfcache)
 window.addEventListener('pageshow', (event) => {
-  lastTime = 0;
-  if (typeof resizeCanvas === 'function') {
-    resizeCanvas();
+  if (typeof onWindowResize === 'function') {
+    onWindowResize();
   }
 });

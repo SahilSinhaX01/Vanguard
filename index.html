@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VANGUARD // DEEP SPACE COMMAND</title>
-  <meta name="description" content="Cinematic command hub of the VANGUARD-class deep space warship. Augment, enlist, and monitor fleet battle operations. CLASSIFIED.">
+  <title>VANGUARD // TECHFEST 2026</title>
+  <meta name="description" content="Cinematic command hub and 3D interactive portal of the VANGUARD-class heavy cruiser for Techfest 2026. CLASSIFIED.">
   
   <!-- Fonts Import -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +34,7 @@
   <!-- Hero Section -->
   <section class="hero">
     <div class="hero-container">
-      <span class="mission-label">VANGUARD COMMAND / DEEP SPACE THEATER / SECTOR 7-ALPHA</span>
+      <span class="mission-label">VANGUARD COMMAND / TECHFEST 2026 / SECTOR 7-ALPHA</span>
       <h1 class="hero-title">
         <span class="typewriter-line">
           <span class="ghost-text">WAR IS</span>
@@ -282,6 +282,21 @@
       VANGUARD DEEP SPACE COMMAND / CLASSIFIED OPERATION &copy; 2026
     </div>
   </footer>
+
+  <!-- Three.js 3D Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- Three.js Post-Processing Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+  <!-- GSAP Core & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
   <!-- Canvas Deep Space Battle Logic -->
   <script src="script.js" defer></script>
