@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANGUARD // CYBORG ENLISTMENT</title>
+  <meta name="description" content="Operational recruitment and cybernetic augmentation link portal. Establish neural link telemetry. CLASSIFIED.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Syne:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Space Battle Canvas -->
+  <canvas id="battle-canvas"></canvas>
+
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <a href="index.html" class="nav-logo">VANGUARD</a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="nav-link" id="nav-fleet">Fleet</a></li>
+      <li><a href="armaments.html" class="nav-link" id="nav-armaments">Armaments</a></li>
+      <li><a href="crew.html" class="nav-link" id="nav-crew">Crew</a></li>
+      <li><a href="intelligence.html" class="nav-link" id="nav-intelligence">Intelligence</a></li>
+    </ul>
+    <a href="enlist.html" class="btn btn-enlist active" id="nav-enlist-btn">ENLIST</a>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-container">
+    <div class="page-header">
+      <h1 class="page-title">Neural Enlistment</h1>
+      <p class="page-subtitle">Establish Cognitive Coupling Link / Augment Spinal Grid Matrices / Enlist Division</p>
+    </div>
+
+    <!-- Enlist Grid -->
+    <div class="enlist-grid">
+      <!-- Left side: Entry Form -->
+      <div class="enlist-form-card">
+        <h3 class="tech-panel-title" style="margin-bottom: 24px;">Biometric Verification Request</h3>
+        
+        <form id="enlist-form" onsubmit="return false;">
+          <div class="enlist-field">
+            <label for="callsign">Operative Callsign</label>
+            <input type="text" id="callsign" class="enlist-input-text" placeholder="e.g. PHANTOM-9" maxlength="16" required>
+          </div>
+
+          <div class="enlist-field">
+            <label for="division">Select Augment Division</label>
+            <select id="division" class="enlist-select">
+              <option value="FLIGHT SYSTEM">FLIGHT OPERATIONS (PILOT COUPLING)</option>
+              <option value="TACTICAL BATTERY">TACTICAL BATTERY (GUNNER LOCKS)</option>
+              <option value="SHIELD EMITTER">SHIELD COIL CONTROLS (ENGINEER SYNC)</option>
+            </select>
+          </div>
+
+          <div class="enlist-field">
+            <label for="spinal-bias">Spinal Plating Density</label>
+            <select id="spinal-bias" class="enlist-select">
+              <option value="GRADE A CARBON">GRADE-A CARBON REINFORCED</option>
+              <option value="GRADE B COMPOSITE">GRADE-B LIGHT AGILITY COMPOSITE</option>
+              <option value="GRADE S NEUTRONIUM">GRADE-S TITAN HEAVY METALS</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 18px; margin-top: 10px;">INITIATE COUPLING</button>
+        </form>
+      </div>
+
+      <!-- Right side: Terminal Logger -->
+      <div class="enlist-page-terminal" id="enlist-page-terminal">
+        <div class="terminal-line info">VANGUARD DIVISION REGISTER PORTAL v3.84</div>
+        <div class="terminal-line info">HARDWARE STATUS: ONLINE / SYNAPSE BIAS REGISTER STABLE</div>
+        <div class="terminal-line">AWAITING BIOMETRIC FORM SUBMISSION FROM ENLISTMENT TERMINAL.<span class="terminal-cursor"></span></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-logo">VANGUARD</div>
+    <ul class="footer-links">
+      <li><a href="index.html" class="footer-link">Fleet</a></li>
+      <li><a href="armaments.html" class="footer-link">Specs</a></li>
+      <li><a href="crew.html" class="footer-link">Crew</a></li>
+      <li><a href="intelligence.html" class="footer-link">Intelligence</a></li>
+    </ul>
+    <div class="footer-info">
+      VANGUARD DEEP SPACE COMMAND / CLASSIFIED OPERATION &copy; 2026
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANGUARD // SECTOR INTELLIGENCE</title>
+  <meta name="description" content="Threat detection networks, starchart sectors, and warning logs of the Vanguard intelligence unit. CLASSIFIED.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Syne:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Space Battle Canvas -->
+  <canvas id="battle-canvas"></canvas>
+
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <a href="index.html" class="nav-logo">VANGUARD</a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="nav-link" id="nav-fleet">Fleet</a></li>
+      <li><a href="armaments.html" class="nav-link" id="nav-armaments">Armaments</a></li>
+      <li><a href="crew.html" class="nav-link" id="nav-crew">Crew</a></li>
+      <li><a href="intelligence.html" class="nav-link active" id="nav-intelligence">Intelligence</a></li>
+    </ul>
+    <a href="enlist.html" class="btn btn-enlist" id="nav-enlist-btn">ENLIST</a>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-container">
+    <div class="page-header">
+      <h1 class="page-title">Sector Intelligence</h1>
+      <p class="page-subtitle">Deep Space Threat Scanning / Hostile Signature Map / Real-Time Feeds</p>
+    </div>
+
+    <div class="intel-layout">
+      <!-- Left side: Threat details -->
+      <div class="tech-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <h3 class="tech-panel-title">Active Combat Sectors</h3>
+          <div class="threat-table-container">
+            <table class="threat-table">
+              <thead>
+                <tr>
+                  <th>Sector ID</th>
+                  <th>Designation</th>
+                  <th>Threat Level</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="sector-row-trigger" data-node="node1" style="cursor: pointer;">
+                  <td style="font-weight: bold; color: var(--text-primary);">SEC 7-ALPHA</td>
+                  <td>Contested Frontier</td>
+                  <td><span class="threat-badge high">Critical</span></td>
+                  <td style="color: #ffffff;">Active Engagements</td>
+                </tr>
+                <tr class="sector-row-trigger" data-node="node2" style="cursor: pointer;">
+                  <td style="font-weight: bold; color: var(--text-primary);">SEC 9-BETA</td>
+                  <td>Hyperspace Route</td>
+                  <td><span class="threat-badge medium">Medium</span></td>
+                  <td>Patrol Active</td>
+                </tr>
+                <tr class="sector-row-trigger" data-node="node3" style="cursor: pointer;">
+                  <td style="font-weight: bold; color: var(--text-primary);">SEC 12-GAMMA</td>
+                  <td>Uncharted Nebula</td>
+                  <td><span class="threat-badge low">Minimal</span></td>
+                  <td>Monitoring</td>
+                </tr>
+                <tr class="sector-row-trigger" data-node="node4" style="cursor: pointer;">
+                  <td style="font-weight: bold; color: var(--text-primary);">SEC 4-DELTA</td>
+                  <td>Core Outpost</td>
+                  <td><span class="threat-badge low">Minimal</span></td>
+                  <td>Secured</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+          <h4 id="intel-detail-title" style="font-family: var(--font-headings); font-size: 13px; color: var(--text-primary); margin-bottom: 8px;">SECTOR SELECTED: SEC 7-ALPHA</h4>
+          <p id="intel-detail-desc" style="font-size: 12px; color: var(--text-secondary); line-height: 1.7;">
+            VANGUARD currently engaged with multiple hostile squadrons. Laser fire reports and structural compression monitors registered. Target flagship elimination completed at 01:06:26.
+          </p>
+        </div>
+      </div>
+
+      <!-- Right side: SVG Starchart -->
+      <div class="starchart-container">
+        <h3 class="tech-panel-title" style="align-self: flex-start; width: 100%;">Tactical Coordinate Starchart</h3>
+        <svg class="starchart-svg" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="200" cy="200" r="150" stroke="rgba(255,255,255,0.02)" stroke-width="0.75" />
+          <circle cx="200" cy="200" r="100" stroke="rgba(255,255,255,0.02)" stroke-width="0.75" />
+          <circle cx="200" cy="200" r="50" stroke="rgba(255,255,255,0.02)" stroke-width="0.75" />
+          <line x1="200" y1="30" x2="200" y2="370" stroke="rgba(255,255,255,0.02)" stroke-width="0.5" />
+          <line x1="30" y1="200" x2="370" y2="200" stroke="rgba(255,255,255,0.02)" stroke-width="0.5" />
+
+          <line x1="120" y1="120" x2="280" y2="100" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" stroke-dasharray="2,2" />
+          <line x1="280" y1="100" x2="310" y2="250" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" stroke-dasharray="2,2" />
+          <line x1="120" y1="120" x2="90" y2="270" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" stroke-dasharray="2,2" />
+          <line x1="90" y1="270" x2="310" y2="250" stroke="rgba(255,255,255,0.15)" stroke-width="0.75" stroke-dasharray="2,2" />
+
+          <g class="sector-node" id="node1" data-title="SECTOR SELECTED: SEC 7-ALPHA" data-desc="VANGUARD currently engaged with multiple hostile squadrons. Laser fire reports and structural compression monitors registered. Target flagship elimination completed at 01:06:26.">
+            <circle cx="120" cy="120" r="6" fill="#ffffff" stroke="rgba(255,255,255,0.4)" stroke-width="3" />
+            <text x="120" y="105" class="sector-label" text-anchor="middle">SEC 7-ALPHA</text>
+          </g>
+
+          <g class="sector-node" id="node2" data-title="SECTOR SELECTED: SEC 9-BETA" data-desc="Major hyperspace gateway routes. Current threat levels are moderate. Scheduled patrols by VANGUARD cohort squadrons are maintaining sub-light sweep rotations.">
+            <circle cx="280" cy="100" r="4" fill="rgba(255,255,255,0.6)" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+            <text x="280" y="85" class="sector-label" text-anchor="middle">SEC 9-BETA</text>
+          </g>
+
+          <g class="sector-node" id="node3" data-title="SECTOR SELECTED: SEC 12-GAMMA" data-desc="Borderlands region. Heavy nebula gas interference makes sensor grids unreliable. Minimal combat signatures detected but passive warning metrics are recommended.">
+            <circle cx="310" cy="250" r="4" fill="rgba(255,255,255,0.6)" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+            <text x="310" y="235" class="sector-label" text-anchor="middle">SEC 12-GAMMA</text>
+          </g>
+
+          <g class="sector-node" id="node4" data-title="SECTOR SELECTED: SEC 4-DELTA" data-desc="Command Base operations coordinate center. Highly fortified sector. Defense fleets stable. Containment grids operating at maximum specs. No hostile signatures logged.">
+            <circle cx="90" cy="270" r="4" fill="rgba(255,255,255,0.6)" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+            <text x="90" y="255" class="sector-label" text-anchor="middle">SEC 4-DELTA</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-logo">VANGUARD</div>
+    <ul class="footer-links">
+      <li><a href="index.html" class="footer-link">Fleet</a></li>
+      <li><a href="armaments.html" class="footer-link">Specs</a></li>
+      <li><a href="crew.html" class="footer-link">Crew</a></li>
+      <li><a href="intelligence.html" class="footer-link">Intelligence</a></li>
+    </ul>
+    <div class="footer-info">
+      VANGUARD DEEP SPACE COMMAND / CLASSIFIED OPERATION &copy; 2026
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

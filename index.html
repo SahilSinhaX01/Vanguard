@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANGUARD // DEEP SPACE COMMAND</title>
+  <meta name="description" content="Cinematic command hub of the VANGUARD-class deep space warship. Augment, enlist, and monitor fleet battle operations. CLASSIFIED.">
+  
+  <!-- Fonts Import -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Syne:wght@700&display=swap" rel="stylesheet">
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Space Battle Canvas -->
+  <canvas id="battle-canvas"></canvas>
+
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <a href="index.html" class="nav-logo">VANGUARD</a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="nav-link active" id="nav-fleet">Fleet</a></li>
+      <li><a href="armaments.html" class="nav-link" id="nav-armaments">Armaments</a></li>
+      <li><a href="crew.html" class="nav-link" id="nav-crew">Crew</a></li>
+      <li><a href="intelligence.html" class="nav-link" id="nav-intelligence">Intelligence</a></li>
+    </ul>
+    <a href="enlist.html" class="btn btn-enlist" id="nav-enlist-btn">ENLIST</a>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-container">
+      <span class="mission-label">VANGUARD COMMAND / DEEP SPACE THEATER / SECTOR 7-ALPHA</span>
+      <h1 class="hero-title">
+        <span class="typewriter-line">
+          <span class="ghost-text">WAR IS</span>
+          <span class="typing-text line-1">WAR IS</span>
+        </span>
+        <span class="typewriter-line">
+          <span class="ghost-text">ALREADY</span>
+          <span class="typing-text line-2">ALREADY</span>
+        </span>
+        <span class="typewriter-line">
+          <span class="ghost-text">HERE.</span>
+          <span class="typing-text line-3">HERE.</span>
+        </span>
+      </h1>
+      <hr class="hero-divider">
+      <p class="hero-subtext">
+        The VANGUARD-class warship carries 340 augmented crew members into contested deep space. Cyborg. Relentless. Undefeated.
+      </p>
+      <div class="hero-actions">
+        <a href="enlist.html" class="btn btn-primary">JOIN THE FLEET</a>
+        <a href="logs.html" class="btn btn-ghost">VIEW BATTLE LOGS &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-value">340</span>
+      <span class="stat-label">Augmented Crew</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">4</span>
+      <span class="stat-label">Engine Cores</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">0</span>
+      <span class="stat-label">Missions Failed</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">VII</span>
+      <span class="stat-label">Ship Generation</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">&infin;</span>
+      <span class="stat-label">Combat Hours</span>
+    </div>
+  </section>
+
+  <!-- Vessel Architecture (Specs) Section -->
+  <section class="specs-section">
+    <div class="specs-content">
+      <span class="specs-tag">TECHNICAL BRIEF / CLASSIFIED</span>
+      <h2 class="specs-title">Built for one purpose.</h2>
+      <p class="specs-body">
+        Engineered with a neutronium-carbon composite frame, the VANGUARD is designed to withstand direct spatial bombardments while maintaining extreme agility. Powered by four synchronized ion-pulse cores, it provides sustained sub-light velocity, feeding a twelve-turret high-energy ion armament array.
+      </p>
+      <div class="specs-list">
+        <div class="spec-list-item">
+          <span class="spec-name">Hull</span>
+          <span class="spec-value">Neutronium-carbon composite</span>
+        </div>
+        <div class="spec-list-item">
+          <span class="spec-name">Propulsion</span>
+          <span class="spec-value">4&times; ion-pulse cores</span>
+        </div>
+        <div class="spec-list-item">
+          <span class="spec-name">Armaments</span>
+          <span class="spec-value">12 turret arrays, 2 torpedo bays</span>
+        </div>
+        <div class="spec-list-item">
+          <span class="spec-name">Crew</span>
+          <span class="spec-value">340 cyborg operatives</span>
+        </div>
+      </div>
+      <div style="margin-top: 36px;">
+        <a href="armaments.html" class="btn btn-ghost">VIEW FULL SPECS &rarr;</a>
+      </div>
+    </div>
+    <div class="schematic-container">
+      <!-- Vessel SVG Schematic Blueprint -->
+      <svg class="blueprint-svg" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="rgba(255, 255, 255, 0.03)" stroke-width="0.5">
+          <line x1="50" y1="0" x2="50" y2="600" /><line x1="100" y1="0" x2="100" y2="600" />
+          <line x1="150" y1="0" x2="150" y2="600" /><line x1="200" y1="0" x2="200" y2="600" />
+          <line x1="250" y1="0" x2="250" y2="600" /><line x1="300" y1="0" x2="300" y2="600" />
+          <line x1="350" y1="0" x2="350" y2="600" /><line x1="400" y1="0" x2="400" y2="600" />
+          <line x1="450" y1="0" x2="450" y2="600" /><line x1="500" y1="0" x2="500" y2="600" />
+        </g>
+        <line x1="300" y1="20" x2="300" y2="580" stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.75" stroke-dasharray="4,4" />
+        <line x1="20" y1="300" x2="580" y2="300" stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.75" stroke-dasharray="4,4" />
+
+        <path d="M 300 240 L 260 280 L 120 340 L 160 385 L 250 365 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+        <path d="M 300 240 L 340 280 L 480 340 L 440 385 L 350 365 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+        <path d="M 300 130 L 265 240 L 255 350 L 260 480 L 340 480 L 345 350 L 335 240 Z" fill="rgba(10,10,10,0.5)" stroke="rgba(255, 255, 255, 0.6)" stroke-width="1.2" />
+        <line x1="300" y1="130" x2="300" y2="480" stroke="rgba(255, 255, 255, 0.25)" stroke-width="0.75" />
+        
+        <line x1="280" y1="190" x2="320" y2="190" stroke="rgba(255, 255, 255, 0.3)" stroke-width="0.6" />
+        <line x1="273" y1="215" x2="327" y2="215" stroke="rgba(255, 255, 255, 0.3)" stroke-width="0.6" />
+        <line x1="262" y1="270" x2="338" y2="270" stroke="rgba(255, 255, 255, 0.3)" stroke-width="0.6" />
+        
+        <path d="M 300 220 L 282 255 L 285 295 L 315 295 L 318 255 Z" fill="rgba(20,20,20,0.8)" stroke="rgba(255, 255, 255, 0.7)" stroke-width="1.2" />
+        <circle cx="300" cy="255" r="4" stroke="rgba(255,255,255,0.4)" stroke-width="0.6" fill="none" />
+        
+        <rect x="264" y="480" width="12" height="24" fill="rgba(20,20,20,0.9)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="0.75" />
+        <rect x="282" y="480" width="10" height="18" fill="rgba(20,20,20,0.9)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="0.75" />
+        <rect x="308" y="480" width="10" height="18" fill="rgba(20,20,20,0.9)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="0.75" />
+        <rect x="324" y="480" width="12" height="24" fill="rgba(20,20,20,0.9)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="0.75" />
+
+        <path d="M 300 260 L 150 200 L 60 200" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" fill="none" />
+        <text x="60" y="192" font-family="Inter" font-size="9" fill="#F0F0EE" letter-spacing="0.1em">01 // COMMAND BRIDGE</text>
+        
+        <path d="M 270 490 L 180 540 L 60 540" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" fill="none" />
+        <text x="60" y="532" font-family="Inter" font-size="9" fill="#F0F0EE" letter-spacing="0.1em">03 // ENGINE ARRAY</text>
+
+        <path d="M 300 410 L 440 410 L 540 410" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" fill="none" />
+        <text x="440" y="402" font-family="Inter" font-size="9" fill="#F0F0EE" letter-spacing="0.1em">04 // REACTOR CORE</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Crew Section ("THE AUGMENTED") -->
+  <section class="crew-section">
+    <h2 class="crew-title">Part human. Fully lethal.</h2>
+    <div class="crew-grid">
+      <!-- Card 1: PILOT -->
+      <div class="crew-card">
+        <div class="portrait-wrapper">
+          <svg class="portrait-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.12)" stroke-width="0.75" />
+            <polygon points="50,22 73,42 66,78 34,78 27,42" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+            <line x1="50" y1="22" x2="50" y2="78" stroke="rgba(255,255,255,0.15)" stroke-dasharray="2,2" />
+            <circle cx="60" cy="42" r="5" stroke="#ffffff" stroke-width="1" />
+            <circle cx="60" cy="42" r="1.5" fill="#ffffff" />
+            <path d="M 27 42 L 40 42 L 50 48" stroke="rgba(255,255,255,0.4)" stroke-width="0.75" />
+            <path d="M 73 42 L 60 42" stroke="rgba(255,255,255,0.4)" stroke-width="0.75" />
+            <path d="M 34 78 L 34 68 L 42 64" stroke="rgba(255,255,255,0.2)" stroke-width="0.75" />
+            <path d="M 66 78 L 66 70" stroke="rgba(255,255,255,0.2)" stroke-width="0.75" />
+            <rect x="55" y="37" width="10" height="10" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" />
+          </svg>
+        </div>
+        <h3 class="crew-role">PILOT</h3>
+        <p class="crew-desc">Augmented neural pathways directly linked to vector control engines. Handles intense high-G space maneuvers with zero latency.</p>
+      </div>
+
+      <!-- Card 2: TACTICAL -->
+      <div class="crew-card">
+        <div class="portrait-wrapper">
+          <svg class="portrait-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.12)" stroke-width="0.75" />
+            <path d="M 30,25 L 70,25 L 75,45 L 68,75 L 32,75 L 25,45 Z" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+            <polygon points="28,38 72,38 74,48 26,48" stroke="#ffffff" stroke-width="1" fill="rgba(255,255,255,0.05)" />
+            <line x1="30" y1="43" x2="70" y2="43" stroke="#ffffff" stroke-width="1" />
+            <circle cx="50" cy="43" r="14" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="2,2" />
+            <line x1="50" y1="28" x2="50" y2="58" stroke="rgba(255,255,255,0.25)" stroke-width="0.5" />
+            <path d="M 38,75 L 38,82 L 62,82 L 62,75" stroke="rgba(255,255,255,0.2)" stroke-width="0.75" />
+          </svg>
+        </div>
+        <h3 class="crew-role">TACTICAL</h3>
+        <p class="crew-desc">Monitors 360-degree spatial threat feeds. Controls auxiliary gunnery and coordinates active countermeasure interception grids.</p>
+      </div>
+
+      <!-- Card 3: ENGINEER -->
+      <div class="crew-card">
+        <div class="portrait-wrapper">
+          <svg class="portrait-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.12)" stroke-width="0.75" />
+            <polygon points="50,20 72,40 68,75 50,82 32,75 28,40" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+            <path d="M 50,20 L 50,82" stroke="rgba(255,255,255,0.2)" />
+            <circle cx="38" cy="42" r="6" stroke="#ffffff" stroke-width="1" />
+            <circle cx="38" cy="42" r="3" stroke="rgba(255,255,255,0.5)" stroke-width="0.5" />
+            <circle cx="38" cy="42" r="1" fill="#ffffff" />
+            <path d="M 50,30 L 64,30 L 64,38 L 50,44" stroke="rgba(255,255,255,0.25)" stroke-width="0.75" />
+            <circle cx="58" cy="37" r="1" fill="rgba(255,255,255,0.5)" />
+            <path d="M 50,56 L 68,56 L 64,68" stroke="rgba(255,255,255,0.2)" stroke-width="0.75" />
+          </svg>
+        </div>
+        <h3 class="crew-role">ENGINEER</h3>
+        <p class="crew-desc">Hyper-matter reactor synchronization and structural shielding. Manages energy routing configurations and vector thruster calibration.</p>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 50px;">
+      <a href="crew.html" class="btn btn-ghost">VIEW FULL ROSTER &rarr;</a>
+    </div>
+  </section>
+
+  <!-- Sector Intelligence Preview Section -->
+  <section class="specs-section" style="border-top: 1px solid rgba(255, 255, 255, 0.05); background: rgba(0, 0, 0, 0.95); margin-top: 0; padding-top: 80px; padding-bottom: 80px;">
+    <div class="schematic-container" style="order: 2;">
+      <!-- Mini Radar SVG Schematic -->
+      <svg class="blueprint-svg" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="200" cy="200" r="150" stroke="rgba(255, 255, 255, 0.04)" stroke-width="0.75" />
+        <circle cx="200" cy="200" r="100" stroke="rgba(255, 255, 255, 0.04)" stroke-width="0.75" />
+        <circle cx="200" cy="200" r="50" stroke="rgba(255, 255, 255, 0.04)" stroke-width="0.75" />
+        <line x1="200" y1="50" x2="200" y2="350" stroke="rgba(255, 255, 255, 0.03)" stroke-width="0.75" stroke-dasharray="4,4" />
+        <line x1="50" y1="200" x2="350" y2="200" stroke="rgba(255, 255, 255, 0.03)" stroke-width="0.75" stroke-dasharray="4,4" />
+        
+        <!-- Radar Sweep Line -->
+        <line x1="200" y1="200" x2="306" y2="94" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1" />
+        
+        <!-- Active Target Blips -->
+        <circle cx="120" cy="120" r="5" fill="#ffffff" />
+        <circle cx="120" cy="120" r="12" stroke="rgba(255, 255, 255, 0.25)" stroke-width="0.5" />
+        <text x="120" y="105" font-family="Inter" font-size="8" fill="#F0F0EE" letter-spacing="0.1em" text-anchor="middle">HOSTILE SIG (SEC 7)</text>
+        
+        <circle cx="290" cy="180" r="3" fill="rgba(255, 255, 255, 0.5)" />
+        <circle cx="160" cy="300" r="4" fill="rgba(255, 255, 255, 0.7)" />
+      </svg>
+    </div>
+    <div class="specs-content" style="order: 1;">
+      <span class="specs-tag">SECTOR THREAT TELEMETRY</span>
+      <h2 class="specs-title">Hostile sweep grids.</h2>
+      <p class="specs-body">
+        Real-time combat telemetry indicates increased hostile activity across Sector 7-Alpha and neighboring warp corridors. Passive warning arrays are online. Active threat sweeps are coordinated from the primary bridge.
+      </p>
+      <div style="margin-top: 30px;">
+        <a href="intelligence.html" class="btn btn-ghost">ACCESS INTEL GRID &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-container">
+      <div class="reticle-overlay"></div>
+      <h2 class="cta-title">Ready to augment?</h2>
+      <p class="cta-subline">JOIN THE INTEGRATED COMBAT DIVISION OF VANGUARD DEEP SPACE COMMAND.</p>
+      <div class="cta-actions">
+        <a href="enlist.html" class="btn btn-primary">REQUEST DEPLOYMENT</a>
+        <a href="logs.html" class="btn btn-ghost">READ THE MANIFESTO &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-logo">VANGUARD</div>
+    <ul class="footer-links">
+      <li><a href="index.html" class="footer-link">Fleet</a></li>
+      <li><a href="armaments.html" class="footer-link">Specs</a></li>
+      <li><a href="crew.html" class="footer-link">Crew</a></li>
+      <li><a href="intelligence.html" class="footer-link">Intelligence</a></li>
+    </ul>
+    <div class="footer-info">
+      VANGUARD DEEP SPACE COMMAND / CLASSIFIED OPERATION &copy; 2026
+    </div>
+  </footer>
+
+  <!-- Canvas Deep Space Battle Logic -->
+  <script src="script.js" defer></script>
+</body>
+</html>

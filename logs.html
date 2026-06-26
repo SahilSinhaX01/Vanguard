@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANGUARD // COMBAT LOGS</title>
+  <meta name="description" content="Database of classified space battle archives, patrol telemetry, and the Vanguard Manifesto. CLASSIFIED.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Syne:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Space Battle Canvas -->
+  <canvas id="battle-canvas"></canvas>
+
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <a href="index.html" class="nav-logo">VANGUARD</a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="nav-link" id="nav-fleet">Fleet</a></li>
+      <li><a href="armaments.html" class="nav-link" id="nav-armaments">Armaments</a></li>
+      <li><a href="crew.html" class="nav-link" id="nav-crew">Crew</a></li>
+      <li><a href="intelligence.html" class="nav-link" id="nav-intelligence">Intelligence</a></li>
+    </ul>
+    <a href="enlist.html" class="btn btn-enlist" id="nav-enlist-btn">ENLIST</a>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-container">
+    <div class="page-header">
+      <h1 class="page-title">Combat Records</h1>
+      <p class="page-subtitle">Classified Operations / Fleet Historical Logs / Manifesto Files</p>
+    </div>
+
+    <!-- Logs Layout -->
+    <div class="logs-layout">
+      <!-- Left side: folder buttons -->
+      <div class="log-folders">
+        <button class="log-folder-btn active" data-log-id="sec7">
+          <span class="log-folder-name">SEC 7-ALPHA LOGS</span>
+          <span class="log-folder-meta">Active Engagement File</span>
+        </button>
+
+        <button class="log-folder-btn" data-log-id="sec9">
+          <span class="log-folder-name">SEC 9-BETA PATROLS</span>
+          <span class="log-folder-meta">Hyperspace Route Archive</span>
+        </button>
+
+        <button class="log-folder-btn" data-log-id="core4">
+          <span class="log-folder-name">SEC 4-DELTA DATA</span>
+          <span class="log-folder-meta">Fortress Base Operations</span>
+        </button>
+
+        <button class="log-folder-btn" data-log-id="manifesto">
+          <span class="log-folder-name">VANGUARD MANIFESTO</span>
+          <span class="log-folder-meta">Philosophical Doctrine</span>
+        </button>
+      </div>
+
+      <!-- Right side: log viewer -->
+      <div class="logs-terminal-viewer" id="logs-terminal-viewer">
+        <div class="terminal-line info">DECRYPTING CLASSIFIED COMBAT ARCHIVES... SUCCESS.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:04:12 SEC-7] Vanguard exited hyperspace warp link. Sector 7-Alpha coordinates locked.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:04:30 SEC-7] Alert: 4 angular enemy ships detected on sweep intercept paths.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:04:55 SEC-7] Shield generators set to 120% capacity. Vector engines stable.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:05:08 SEC-7] Enemy weapons volley registered (beams missed. 0% structural shield impact).</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:05:12 SEC-7] Wing turret arrays charged. locking thermal signature matrices.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:05:15 SEC-7] Weapon Fire: Tactical ion laser battery engaged.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:05:16 SEC-7] Direct strike logged. Enemy vessel #3 thermal sig dissolved.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:05:38 SEC-7] Adjusting nozzle vectors for high-speed orbit tracking. Bob: stable.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:06:01 SEC-7] Countermeasures active. Debris fields safely avoided.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:06:22 SEC-7] Vanguard turret locks onto flagship target.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:06:25 SEC-7] Laser fired. Outer armor plate compression verified.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:06:26 SEC-7] Threat flagship explosion registered. Debris field scattering.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:06:44 SEC-7] Remaining enemy fighters break formations, executing retreat.</div>
+        <div class="terminal-line">[LOG 2026.06.27-01:07:00 SEC-7] Sector secured. Engines reduced to patrol speed. Status: Undefeated.</div>
+        <div class="terminal-line">END OF FILE TRANSMISSION DATA FEED.<span class="terminal-cursor"></span></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-logo">VANGUARD</div>
+    <ul class="footer-links">
+      <li><a href="index.html" class="footer-link">Fleet</a></li>
+      <li><a href="armaments.html" class="footer-link">Specs</a></li>
+      <li><a href="crew.html" class="footer-link">Crew</a></li>
+      <li><a href="intelligence.html" class="footer-link">Intelligence</a></li>
+    </ul>
+    <div class="footer-info">
+      VANGUARD DEEP SPACE COMMAND / CLASSIFIED OPERATION &copy; 2026
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
